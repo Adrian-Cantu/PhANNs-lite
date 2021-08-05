@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+## phanns added
+#
+*.h5
+*.tar
+mean_part.p
+std_part.p
