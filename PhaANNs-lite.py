@@ -6,12 +6,14 @@ from Bio import SeqIO
 from Bio.SeqUtils.ProtParam import ProteinAnalysis
 from scipy import stats
 from Bio.Alphabet import IUPAC
+from tensorflow.keras.models import load_model
 import tensorflow as tf
 import pandas as pd
 import os
 import ntpath
 import pickle
 import sys
+import gc
 
 class ann_result:
 
@@ -123,10 +125,31 @@ class ann_result:
                     arr[i,j]=(arr[i,j] - self.g_mean_arr[j])/self.g_std_arr[j]
         return (names,arr) 
 
-
+    def predict(self):
+        (names,pp)=test.extract_n()
+        os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+        os.environ["CUDA_VISIBLE_DEVICES"] = ""
+        mean_arr=pickle.load(open("mean_part.p", "rb" ))
+        std_arr=pickle.load(open( "std_part.p", "rb" ))
+        total_fasta=self.g_total_fasta
+        sec_num=0
+        arr = numpy.empty((total_fasta,11), dtype=numpy.float)
+        n_members = 10
+        models = list()
+        for model_number in range(n_members):
+        #load model
+            print('loading ... tetra_sc_tri_p_{:02d}.h5'.format(model_number))
+            model =  load_model('tetra_sc_tri_p_'+"{:02d}".format(model_number)+'.h5')
+            arr[sec_num,]=model.predict(pp)
+            del model
+            gc.collect()
+            sec_num=sec_num+1
+        return (names,arr)
 
 
 if __name__ == "__main__":
+#    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+#    os.environ["CUDA_VISIBLE_DEVICES"] = ""
     test=ann_result(sys.argv[1])
-    (names,pp)=test.extract_n()
+    (names,pp)=test.predict()
     print(pp)
