@@ -133,18 +133,22 @@ class ann_result:
         std_arr=pickle.load(open( "std_part.p", "rb" ))
         total_fasta=self.g_total_fasta
         sec_num=0
-        arr = numpy.empty((total_fasta,11), dtype=numpy.float)
+        #arr = numpy.empty((total_fasta,11), dtype=numpy.float)
         n_members = 10
-        models = list()
+        results = list()
         for model_number in range(n_members):
         #load model
             print('loading ... tetra_sc_tri_p_{:02d}.h5'.format(model_number))
             model =  load_model('tetra_sc_tri_p_'+"{:02d}".format(model_number)+'.h5')
-            arr[sec_num,]=model.predict(pp)
+            #arr[sec_num,]=model.predict(pp)
+            results.append(model.predict(pp))
             del model
             gc.collect()
             sec_num=sec_num+1
-        return (names,arr)
+        yhats_v=numpy.array(results)
+        predicted_Y=numpy.sum(yhats_v, axis=0)
+
+        return (names,predicted_Y)
 
 
 if __name__ == "__main__":
